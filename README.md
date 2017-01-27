@@ -141,3 +141,6 @@ to complete for this example):
 2    10 -0.04190666 0.13234880
 3    50 -0.02816332 0.08536906
 ```
+
+The second column `ED` is reasonably close to Thornton's second column of Table
+1 in his paper.
