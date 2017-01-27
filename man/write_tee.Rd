@@ -4,10 +4,12 @@
 \alias{write_tee}
 \title{A "tee" (in Unix sense) that writes MS's results to file}
 \usage{
-write_tee(x, con)
+write_tee(x, con, pass = TRUE)
 }
 \arguments{
-\item{x}{MS results @param con to save output to
+\item{x}{MS results @param con to save output to}
+
+\item{pass}{if TRUE, pass the input directly to output for pipe operations
 
 This writes a connection \code{con}, then return results (so can be used in
 pipe).}

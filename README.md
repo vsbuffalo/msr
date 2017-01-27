@@ -34,3 +34,25 @@ dataframes (or in this case, tibbles). Here's a simple example:
 1 5.0866
 ```
 
+It's likely for reproducibility's sake you'd like to save the MS run to file.
+You can do this, still sending the output to the pipe with `write_tee()`:
+
+```{R}
+> call_ms(10, 100, "-t 5") %>% write_tee("ms.out") %>%
+   parse_ms() %>% mutate(pi=map_dbl(gametes, pi))
+
+# A tibble: 100 × 5
+     rep segsites  positions         gametes    pi
+   <int>    <dbl>     <list>          <list> <dbl>
+1      1        8  <dbl [8]>  <int [10 × 8]>  1.86
+2      2       13 <dbl [13]> <int [10 × 13]>  2.58
+3      3        4  <dbl [4]>  <int [10 × 4]>  1.64
+4      4       14 <dbl [14]> <int [10 × 14]>  3.86
+5      5       20 <dbl [20]> <int [10 × 20]>  4.98
+6      6        9  <dbl [9]>  <int [10 × 9]>  3.10
+7      7        3  <dbl [3]>  <int [10 × 3]>  1.08
+8      8       11 <dbl [11]> <int [10 × 11]>  3.10
+9      9       23 <dbl [23]> <int [10 × 23]> 10.32
+10    10       28 <dbl [28]> <int [10 × 28]> 10.02
+# ... with 90 more rows
+```

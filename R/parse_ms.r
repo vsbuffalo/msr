@@ -20,6 +20,7 @@ call_ms <- function(nsam, howmany, cmd, verbose=TRUE) {
 #' A "tee" (in Unix sense) that writes MS's results to file
 #'
 #' @param x MS results @param con to save output to
+#' @param pass if TRUE, pass the input directly to output for pipe operations
 #' 
 #' This writes a connection \code{con}, then return results (so can be used in
 #' pipe).
@@ -31,9 +32,10 @@ call_ms <- function(nsam, howmany, cmd, verbose=TRUE) {
 #' res <- call_ms(10, 500, "-t 5") %>% write_tee('test.ms') %>% 
 #'              parse_ms() %>% mutate(pi=map_dbl(gametes, pi))
 #' }
-write_tee <- function(x, con) {
+write_tee <- function(x, con, pass=TRUE) {
   writeLines(x, con=con)
-  return(x)
+  if (pass)
+    return(x)
 }
 
 #' Parse MS's key/value pairs, e.g. segsites and positions
