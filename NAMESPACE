@@ -2,3 +2,4 @@
 
 export(call_ms)
 export(parse_ms)
+export(write_tee)

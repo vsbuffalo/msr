@@ -16,9 +16,30 @@ call_ms <- function(nsam, howmany, cmd, verbose=TRUE) {
   system(ms_cmd, intern=TRUE)
 }
 
+
+#' A "tee" (in Unix sense) that writes MS's results to file
+#'
+#' @param x MS results @param con to save output to
+#' 
+#' This writes a connection \code{con}, then return results (so can be used in
+#' pipe).
+#'
+#' @export
+#' @examples
+#' # write MS results to 'test.ms', then pass down the pipeline
+#' \dontrun{
+#' res <- call_ms(10, 500, "-t 5") %>% write_tee('test.ms') %>% 
+#'              parse_ms() %>% mutate(pi=map_dbl(gametes, pi))
+#' }
+write_tee <- function(x, con) {
+  writeLines(x, con=con)
+  return(x)
+}
+
 #' Parse MS's key/value pairs, e.g. segsites and positions
 #' returning the values as list if there are more than one
-.parse_keyvals <- function(x) {
+#' @keywords internal
+parse_keyvals  <- function(x) {
   keyvals <- gsub("(\\w+): +(.*)", "\\1;;\\2", x, perl=TRUE)
   tmp <- strsplit(keyvals, ";;")[[1]]
   key <- tmp[1]
@@ -31,21 +52,23 @@ call_ms <- function(nsam, howmany, cmd, verbose=TRUE) {
 
 
 #' Convert gaemtes' alleles intro matrix
-.sites_matrix <- function(x) {
+#' @keywords internal
+sites_matrix <- function(x) {
   do.call(rbind, lapply(x, function(y) as.integer(unlist(strsplit(y, "")))))
 }
 
 #' Tidy a single simulation result from MS
-.tidy_simres <- function(x) {
+#' @keywords internal
+tidy_sim <- function(x) {
   # first element is the delimiter "//", last element is blank line (except for
   # last sim) 
-  segsites <- .parse_keyvals(x[2])
-  positions <- .parse_keyvals(x[3])
+  segsites <- parse_keyvals (x[2])
+  positions <- parse_keyvals (x[3])
   gametes <- x[4:length(x)]
 
   # remove empty line if there
   gametes <- gametes[nchar(gametes) > 0]
-  gametes <- .sites_matrix(gametes)
+  gametes <- sites_matrix(gametes)
   tibble(segsites, positions=positions, gametes=list(gametes))
 }
 
@@ -72,8 +95,9 @@ parse_ms <- function(x) {
   x <- x[4:length(x)]  # drop first few lines of metadata
   res_grp <- cumsum(x == "//")
   res <- split(x, res_grp)
-  sims_lst  <- lapply(res, .tidy_simres)
-  sims <- bind_rows(sims_lst)
+  sims_lst  <- lapply(res, tidy_sim)
+  sims <- do.call(rbind, sims_lst)
+  # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
   sims[, c('rep', 'segsites', 'positions', 'gametes')]
 }

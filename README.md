@@ -1,8 +1,9 @@
 # Call/Parse Hudson's MS coalescent simulator results from R
 
 This is a tiny package to call/parse MS results from R. I got sort of sick of
-saving output to file when the end result was a quick graphic. The design is in
-following with Hadley's [purrr](https://github.com/hadley/purrr) and
+saving MS output to file and loading it into R each time I wanted a quick
+graphic. The design is in following with Hadley's
+[purrr](https://github.com/hadley/purrr) and
 [dplyr](https://github.com/hadley/dplyr)-driven tidy way of manipulating
 dataframes (or in this case, tibbles). Here's a simple example:
 

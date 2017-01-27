@@ -23,11 +23,6 @@ importFrom(magrittr,"%>%")}
 Parse MS output from R
 }
 \examples{
-library(magrittr)
-pi <- function(x) sum(apply(x, 2, function(row) {
-                   p <- sum(row)/length(row)
-                   2*p*(1-p)
-})
-call_ms(10, 10, "-t 5") \%>\% parse_ms()
+call_ms(10, 10, "-t 5") \%>\% parse_ms() 
 }
 
