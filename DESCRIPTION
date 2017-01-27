@@ -7,7 +7,6 @@ Depends:
     R (>= 3.3.2)
 Imports:
     tibble,
-    tidyr,
     magrittr
 License: BSD
 Encoding: UTF-8

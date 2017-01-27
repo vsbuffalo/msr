@@ -5,7 +5,11 @@ saving MS output to file and loading it into R each time I wanted a quick
 graphic. The design is in following with Hadley's
 [purrr](https://github.com/hadley/purrr) and
 [dplyr](https://github.com/hadley/dplyr)-driven tidy way of manipulating
-dataframes (or in this case, tibbles). Here's a simple example:
+dataframes (or in this case, tibbles). 
+
+## Example: Calculating Pi
+
+Here's a simple example:
 
 ```{R}
 > library(msr)
@@ -27,12 +31,20 @@ dataframes (or in this case, tibbles). Here's a simple example:
 9      9       16 <dbl [16]> <int [10 × 16]>  5.92
 10    10       12 <dbl [12]> <int [10 × 12]>  3.32
 # ... with 90 more rows
-> res %>% summarize(pi=mean(pi))
+> res %>% summarize(theta_pi=mean(pi), theta_W=mean(segsites)/sum(1/(1:9)))
 # A tibble: 1 × 1
       pi
    <dbl>
 1 5.0866
 ```
+
+The list-column approach stores the site matrices for each run in a `gametes`
+list-column. Each element of the list is a matrix. Similarly, `positions` is a
+list-column, where each element is a vector of positions. Calculations on the
+gamete site matrix can be done using the `mutate(stat = map_dbl(gametes,
+some_fun))` dplyr/purrr pattern (see the example above).
+
+## Writing Output to File
 
 It's likely for reproducibility's sake you'd like to save the MS run to file.
 You can do this, still sending the output to the pipe with `write_tee()`:
