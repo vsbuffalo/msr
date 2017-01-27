@@ -1,4 +1,10 @@
 
+make_args <- function(...) {
+  args <- list(...)
+  mk_arg <- function(flag, args) sprintf("-%s %s", flag, paste(args, collapse=" "))
+  paste(Map(mk_arg, names(args), args), collapse=" ")
+}
+
 #' Call MS from R
 #'
 #' Call Hudon's MS from R, returning a string of results (that can be parsed
@@ -7,13 +13,34 @@
 #' @param nsam number of samples (gametes) to draw
 #' @param howmany how many replicates to run
 #' @param cmd the command to pass to MS 
+#' @param ... command line arguments as function arguments (if not using \code{cmd})
 #' 
 #' @export
-call_ms <- function(nsam, howmany, cmd, verbose=TRUE) {
+call_ms <- function(nsam, howmany, cmd=NULL, ..., verbose=TRUE) {
+  func_args <- make_args(...)
+  if (length(func_args) > 0 && !is.null(cmd))
+    stop("specify string command line arguments through 'cmd' or arguments through '...', not both")
+  if (length(func_args) > 0)
+    cmd <- make_args(...)
   ms_cmd <- sprintf("ms %d %d %s", nsam, howmany, cmd)
   if (verbose)
-    message(sprintf("command: %s", ms_cmd))
+    message(sprintf("command: %s\n", ms_cmd))
   system(ms_cmd, intern=TRUE)
+}
+
+#' Call MS and Parse Output from R
+#'
+#' Call Hudon's MS from R, returning a tibble of results that has been parsed
+#' by parse_ms(). This is simply a wrapper for call_ms() and parse_ms()
+#'
+#' @param nsam number of samples (gametes) to draw
+#' @param howmany how many replicates to run
+#' @param cmd the command to pass to MS 
+#' @param ... command line arguments as function arguments (if not using \code{cmd})
+#' 
+#' @export
+ms <- function(nsam, howmany, cmd=NULL, ..., verbose=TRUE) {
+  parse_ms(call_ms(nsam=nsam, howmany=howmany, cmd=cmd, ..., verbose=verbose))
 }
 
 
