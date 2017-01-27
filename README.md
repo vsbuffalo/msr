@@ -32,10 +32,10 @@ Here's a simple example:
 10    10       12 <dbl [12]> <int [10 × 12]>  3.32
 # ... with 90 more rows
 > res %>% summarize(theta_pi=mean(pi), theta_W=mean(segsites)/sum(1/(1:9)))
-# A tibble: 1 × 1
-      pi
-   <dbl>
-1 5.0866
+ A tibble: 1 × 2
+  theta_pi  theta_W
+     <dbl>    <dbl>
+1 4.950222 6.062281
 ```
 
 The list-column approach stores the site matrices for each run in a `gametes`
