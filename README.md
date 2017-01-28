@@ -98,7 +98,7 @@ combine this with `sample_stats()` below:
 Or, a quick graphic example:
 
 ```{R}
-> ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
+ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
 ```
 
 ![histogram of D](https://raw.githubusercontent.com/vsbuffalo/msr/master/d-example.png)
