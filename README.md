@@ -101,7 +101,7 @@ Or, a quick graphic example:
 ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
 ```
 
-![https://raw.githubusercontent.com/vsbuffalo/msr/master/d-example.png](histogram of D)
+![histogram of D](https://raw.githubusercontent.com/vsbuffalo/msr/master/d-example.png)
 
 ## Writing Output to File
 
