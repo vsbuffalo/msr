@@ -1,6 +1,6 @@
 Package: msr
 Title: Call and parse MS from R
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 'Vince Buffalo <vsbuffaloAAAAA@gmail.com> [aut, cre]'
 Description: Call and parse ouptut from Hudson's MS coalescent simulator from R.
 Depends:
