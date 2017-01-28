@@ -1,10 +1,5 @@
 # Call/Parse/Analyze Hudson's MS coalescent simulator results from R
 
-
-**Warning: this is currently in alpha stage (written very quickly). There are
-bugs and slight biases in the sample_stats() and theta_pi() functions that
-needs to be fixed.**
-
 This is a tiny package to call/parse MS results from R. I got sort of sick of
 saving MS output to file and loading it into R each time I wanted a quick
 graphic. The design is in following with Hadley's
@@ -103,7 +98,7 @@ ms(nsam=10, howmany=50, t=30) %>% sample_stats(.n=10) %>%
 Or, a quick graphic example:
 
 ```{R}
-ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
+p <- ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
 ```
 
 ![histogram of D](https://raw.githubusercontent.com/vsbuffalo/msr/master/d-example.png)
@@ -153,25 +148,29 @@ to complete for this example):
 > library(msr)
 
 # generate the parameter tibble:
-> params <- tibble(nsam=30, howmany=10^4, t=20, r=list(c(0, 1e3), c(10, 1e3), c(50, 1e3))) 
+ params <- tibble(nsam=30, howmany=10^4, t=20, 
+                  r=list(c(0, 1e3), c(10, 1e3), c(50, 1e3))) 
 
 # run the simulations
-> res <- params %>% invoke_rows(.f=ms, .to="msout")
+ res <- params %>% invoke_rows(.f=ms, .to="msout")
 
 # append a sample_stats list-column, calculating sample_stats on each MS run,
 # then unnest, bringing these columns into the main tibble
-> stats <- res %>% mutate(rho=map_dbl(r, first)) %>% 
-              mutate(sample_stats=map(msout, sample_stats, .n=first(nsam))) %>% unnest(sample_stats)
+ stats <- res %>% mutate(rho=map_dbl(r, first)) %>% 
+              mutate(sample_stats=map(msout, sample_stats, .n=first(nsam))) %>% 
+              unnest(sample_stats)
 
 # group by all changing parameters, and calc summaries of the summary statistics
-> stats %>% group_by(rho) %>% summarize(ED=mean(D), sd_D=sd(D))
+ stats %>% group_by(rho) %>% summarize(ED=mean(D), 
+                                       E_D=mean(D_num)/mean(D_denom))
 # A tibble: 3 × 3
-    rho          ED       sd_D
-  <dbl>       <dbl>      <dbl>
-1     0 -0.06608313 0.18045349
-2    10 -0.04190666 0.13234880
-3    50 -0.02816332 0.08536906
+    rho           ED           E_D
+  <dbl>        <dbl>         <dbl>
+1     0 -0.041641653  0.0007249999
+2    10 -0.015730725 -0.0001006263
+3    50 -0.002313999  0.0014067296
+>
 ```
 
-The second column `ED` is reasonably close to Thornton's second column of Table
-1 in his paper.
+The second column `ED` is reasonably close to Thornton's Table 1, showing the
+same trend downward trend.

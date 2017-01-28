@@ -2,8 +2,18 @@
 #' Calculate Pi, via the sum of site heterozygosities 
 #' 
 #' @param x a gamete matrix
+#' @param replace calculate theta pi based on sampling with replacement formula
 #' @export
-theta_pi <- function(x) { p <- colSums(x)/nrow(x); sum(2*p*(1-p)) } 
+theta_pi <- function(x, replace=FALSE) {
+  k <- colSums(x)
+  n <- nrow(x)
+  if (replace) {
+    p <- k/n
+    return(sum(2*p*(1-p)))
+  } else {
+    return(sum(2*(k/n)*((n-k)/(n-1))))
+  }
+}
 
 #' Calculate Watterson's Theta
 #' 
@@ -57,8 +67,7 @@ tajD <- function(pi, s, n) {
 #'
 #' @export
 sample_stats <- function(x, .n) {
-  x %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, .n), D=tajD(theta_pi, segsites, .n))
-               # D_num=tajD_num(theta_pi, segsites, .n), D_denom=tajD_denom(segsites, .n))
+  x %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, .n), D=tajD(theta_pi, segsites, .n), D_num=tajD_num(theta_pi, segsites, .n), D_denom=tajD_denom(segsites, .n))
 }
 
 
