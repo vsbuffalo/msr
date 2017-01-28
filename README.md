@@ -91,14 +91,14 @@ To make quick runs simple, `ms()` runs both `call_ms()` and `parse_ms()`. We
 combine this with `sample_stats()` below:
 
 ```{R}
-ms(nsam=10, howmany=50, t=30) %>% sample_stats(.n=10) %>% 
+> ms(nsam=10, howmany=50, t=30) %>% sample_stats(.n=10) %>% 
     summarize(theta_pi = mean(theta_pi), theta_W = mean(theta_W))
 ```
 
 Or, a quick graphic example:
 
 ```{R}
-p <- ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
+> gplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
 ```
 
 ![histogram of D](https://raw.githubusercontent.com/vsbuffalo/msr/master/d-example.png)
@@ -148,20 +148,20 @@ to complete for this example):
 > library(msr)
 
 # generate the parameter tibble:
- params <- tibble(nsam=30, howmany=10^4, t=20, 
+> params <- tibble(nsam=30, howmany=10^4, t=20, 
                   r=list(c(0, 1e3), c(10, 1e3), c(50, 1e3))) 
 
 # run the simulations
- res <- params %>% invoke_rows(.f=ms, .to="msout")
+> res <- params %>% invoke_rows(.f=ms, .to="msout")
 
 # append a sample_stats list-column, calculating sample_stats on each MS run,
 # then unnest, bringing these columns into the main tibble
- stats <- res %>% mutate(rho=map_dbl(r, first)) %>% 
+> stats <- res %>% mutate(rho=map_dbl(r, first)) %>% 
               mutate(sample_stats=map(msout, sample_stats, .n=first(nsam))) %>% 
               unnest(sample_stats)
 
 # group by all changing parameters, and calc summaries of the summary statistics
- stats %>% group_by(rho) %>% summarize(ED=mean(D), 
+> stats %>% group_by(rho) %>% summarize(ED=mean(D), 
                                        E_D=mean(D_num)/mean(D_denom))
 # A tibble: 3 × 3
     rho           ED           E_D
@@ -169,7 +169,6 @@ to complete for this example):
 1     0 -0.041641653  0.0007249999
 2    10 -0.015730725 -0.0001006263
 3    50 -0.002313999  0.0014067296
->
 ```
 
 The second column `ED` is reasonably close to Thornton's Table 1, showing the
