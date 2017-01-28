@@ -4,7 +4,7 @@
 \alias{call_ms}
 \title{Call MS from R}
 \usage{
-call_ms(nsam, howmany, cmd = NULL, ..., verbose = TRUE)
+call_ms(nsam, howmany, cmd = NULL, ..., ms = "ms", verbose = TRUE)
 }
 \arguments{
 \item{nsam}{number of samples (gametes) to draw}
@@ -14,9 +14,16 @@ call_ms(nsam, howmany, cmd = NULL, ..., verbose = TRUE)
 \item{cmd}{the command to pass to MS}
 
 \item{...}{command line arguments as function arguments (if not using \code{cmd})}
+
+\item{ms}{the ms-like executable to run, must be in \code{$PATH} or path to executable}
 }
 \description{
 Call Hudon's MS from R, returning a string of results (that can be parsed
-with parse_ms()).
+with parse_ms()). Other coalescent simulators are supported as long as they
+output results in MS format; specify with the argument \code{ms='mspms'}
+(in this example, running msprime here). No argument checking occurs in this 
+function; arguments passed to \code{...} are converted to command line 
+arguments, e.g. \code{r=c(4, 1000)} is converted to \code{-r 4 1000} and 
+\code{mutation.rate=1e-5} converted to \code{--mutation-rate 1e-5}.
 }
 

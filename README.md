@@ -164,7 +164,7 @@ to complete for this example):
 > stats %>% group_by(rho) %>% 
      mutate(D_num=tajd_num(theta_pi, segsites, first(nsam)), 
             D_denom=tajd_denom(segsites, first(nsam))) %>%
-            summarize(ED=mean(D), E_D=mean(D_num)/mean(D_denom))
+     summarize(ED=mean(D), E_D=mean(D_num)/mean(D_denom))
 # A tibble: 3 × 3
     rho          ED           E_D
   <dbl>       <dbl>         <dbl>
@@ -176,3 +176,32 @@ to complete for this example):
 This table is reasonably close to Thornton's Table 1, showing the same trend
 downward trend (though there is a lot of variability across runs due to the
 smallish number of replicates).
+
+## Different Simulators
+
+Many coalescent simulators can output data in MS-like format (e.g. Jerome
+Kelleher's awesome [msprime](https://github.com/jeromekelleher/msprime/)).
+These can be used as executables too; just specify `ms=mspms` in the `ms()` or
+`call_ms()` functions. Note that no argument checking is done in this package;
+function arguments passed through `...` are run through a simple set of rules
+to convert them to command line arguments, and then these are passed to the
+executable. Here's an example of using msprime's `mspms` command line program:
+
+```{R}
+> ms(30, 100, t=20, ms="mspms") %>% sample_stats(.n=30)
+# A tibble: 100 × 7
+     rep segsites  positions         gametes  theta_pi   theta_W           D
+   <int>    <dbl>     <list>          <list>     <dbl>     <dbl>       <dbl>
+1      1       79 <dbl [79]> <int [30 × 79]> 23.696552 19.941167  0.71473150
+2      2       83 <dbl [83]> <int [30 × 83]> 19.728736 20.950846 -0.22172280
+3      3       88 <dbl [88]> <int [30 × 88]> 20.664368 22.212946 -0.26544457
+4      4       88 <dbl [88]> <int [30 × 88]> 34.751724 22.212946  2.14929525
+5      5       86 <dbl [86]> <int [30 × 86]> 19.386207 21.708106 -0.40698671
+6      6       66 <dbl [66]> <int [30 × 66]> 15.434483 16.659709 -0.27739707
+7      7       34 <dbl [34]> <int [30 × 34]>  8.278161  8.582274 -0.12919050
+8      8       46 <dbl [46]> <int [30 × 46]> 10.554023 11.611312 -0.33800589
+9      9       63 <dbl [63]> <int [30 × 63]> 16.025287 15.902450  0.02908369
+10    10       96 <dbl [96]> <int [30 × 96]> 30.098851 24.232304  0.92399683
+# ... with 90 more rows
+>
+```

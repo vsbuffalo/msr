@@ -4,7 +4,7 @@
 \alias{ms}
 \title{Call MS and Parse Output from R}
 \usage{
-ms(nsam, howmany, cmd = NULL, ..., verbose = TRUE)
+ms(nsam, howmany, cmd = NULL, ..., ms = "ms", verbose = TRUE)
 }
 \arguments{
 \item{nsam}{number of samples (gametes) to draw}
@@ -14,6 +14,8 @@ ms(nsam, howmany, cmd = NULL, ..., verbose = TRUE)
 \item{cmd}{the command to pass to MS}
 
 \item{...}{command line arguments as function arguments (if not using \code{cmd})}
+
+\item{ms}{the ms-like executable to run, must be in \code{$PATH} or path to executable}
 }
 \description{
 Call Hudon's MS from R, returning a tibble of results that has been parsed

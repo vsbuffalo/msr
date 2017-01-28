@@ -1,28 +1,42 @@
 
+make_flag <- function(flag, vals) {
+  # make a unix CL flag by appending one or two dashes. Dots turned into -
+  dash <- "-"
+  if (nchar(flag) > 1)
+    dash <- "--"
+  vals <- gsub('.', '-', vals, fixed=TRUE)
+  sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
+}
+
 make_args <- function(...) {
   args <- list(...)
-  mk_arg <- function(flag, args) sprintf("-%s %s", flag, paste(args, collapse=" "))
-  paste(Map(mk_arg, names(args), args), collapse=" ")
+  paste(Map(make_flag, names(args), args), collapse=" ")
 }
 
 #' Call MS from R
 #'
 #' Call Hudon's MS from R, returning a string of results (that can be parsed
-#' with parse_ms()). 
+#' with parse_ms()). Other coalescent simulators are supported as long as they
+#' output results in MS format; specify with the argument \code{ms='mspms'}
+#' (in this example, running msprime here). No argument checking occurs in this 
+#' function; arguments passed to \code{...} are converted to command line 
+#' arguments, e.g. \code{r=c(4, 1000)} is converted to \code{-r 4 1000} and 
+#' \code{mutation.rate=1e-5} converted to \code{--mutation-rate 1e-5}.
 #'
 #' @param nsam number of samples (gametes) to draw
 #' @param howmany how many replicates to run
 #' @param cmd the command to pass to MS 
 #' @param ... command line arguments as function arguments (if not using \code{cmd})
+#' @param ms the ms-like executable to run, must be in \code{$PATH} or path to executable
 #' 
 #' @export
-call_ms <- function(nsam, howmany, cmd=NULL, ..., verbose=TRUE) {
+call_ms <- function(nsam, howmany, cmd=NULL, ..., ms="ms", verbose=TRUE) {
   func_args <- make_args(...)
   if (length(func_args) > 0 && !is.null(cmd))
     stop("specify string command line arguments through 'cmd' or arguments through '...', not both")
   if (length(func_args) > 0)
     cmd <- make_args(...)
-  ms_cmd <- sprintf("ms %d %d %s", nsam, howmany, cmd)
+  ms_cmd <- sprintf("%s %d %d %s", ms, nsam, howmany, cmd)
   if (verbose)
     message(sprintf("command: %s\n", ms_cmd))
   system(ms_cmd, intern=TRUE)
@@ -37,10 +51,13 @@ call_ms <- function(nsam, howmany, cmd=NULL, ..., verbose=TRUE) {
 #' @param howmany how many replicates to run
 #' @param cmd the command to pass to MS 
 #' @param ... command line arguments as function arguments (if not using \code{cmd})
+#' @param ms the ms-like executable to run, must be in \code{$PATH} or path to executable
+#
 #' 
 #' @export
-ms <- function(nsam, howmany, cmd=NULL, ..., verbose=TRUE) {
-  parse_ms(call_ms(nsam=nsam, howmany=howmany, cmd=cmd, ..., verbose=verbose))
+ms <- function(nsam, howmany, cmd=NULL, ..., ms="ms", verbose=TRUE) {
+  parse_ms(call_ms(nsam=nsam, howmany=howmany, cmd=cmd, ..., ms=ms, 
+                   verbose=verbose))
 }
 
 
