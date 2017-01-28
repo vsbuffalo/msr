@@ -14,7 +14,8 @@ Here's a simple example:
 ```{R}
 > library(msr)
 > library(tidyverse)
-> res <- call_ms(10, 100, t=5) %>% parse_ms() %>% mutate(pi=map_dbl(gametes, theta_pi))
+> res <- call_ms(10, 100, t=5) %>% parse_ms() %>% 
+            mutate(pi=map_dbl(gametes, theta_pi))
 > res
 # A tibble: 100 × 5
      rep segsites  positions         gametes    pi
@@ -47,7 +48,8 @@ packaged summary statistics functions `theta_pi()` and `theta_W()` on the data
 (though see below for an alternate way with the function `sample_stats()`:
 
 ```{R}
-> res <-  res %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, 10))
+> res <-  res %>% mutate(theta_pi=map_dbl(gametes, theta_pi), 
+                         theta_W=theta_W(segsites, 10))
 > res 
 # A tibble: 100 × 7
      rep segsites  positions         gametes        pi  theta_pi   theta_W
@@ -203,5 +205,52 @@ executable. Here's an example of using msprime's `mspms` command line program:
 9      9       63 <dbl [63]> <int [30 × 63]> 16.025287 15.902450  0.02908369
 10    10       96 <dbl [96]> <int [30 × 96]> 30.098851 24.232304  0.92399683
 # ... with 90 more rows
->
 ```
+
+## Working with Trees
+
+Using the option `-T` in MS outputs an additional entry: Newick-formatted
+trees. `msr` automatically detects this, and adds a `tree` column of
+character-vector Newick-format trees. Below is an example:
+
+```{R}
+> res <- ms(30, 100, t=20, T=TRUE)
+> res %>% select(tree)
+# A tibble: 100 × 1
+                                       tree
+                                      <chr>
+1  (((10:0.088,11:0.088):0.154,(23:0.163,((
+2  (((6:0.018,18:0.018):0.330,((19:0.001,24
+3  (((4:0.071,((24:0.006,25:0.006):0.045,((
+4  (((((((3:0.003,8:0.003):0.025,(19:0.008,
+5  (((10:0.002,24:0.002):0.077,(3:0.008,22:
+6  ((((9:0.022,(22:0.020,(13:0.015,(17:0.00
+7  ((13:0.215,((23:0.001,26:0.001):0.170,(4
+8  (((22:0.123,(15:0.030,(3:0.020,(9:0.003,
+9  (((7:0.009,(18:0.001,30:0.001):0.008):0.
+10 ((24:0.191,((11:0.016,20:0.016):0.031,(4
+# ... with 90 more rows
+``` 
+
+These can be plotted using a package like `ape`:
+
+```{R}
+> library(ape)
+
+# convert all trees using ape's read.tree()
+> res <- res %>% mutate(ape_tree = read.tree(text=tree))
+
+# store original par()
+> opar <- par(no.readonly=TRUE)
+> par(mfrow=c(2, 3))
+
+# walk the sampled rows' tree objects (from ape), plotting each one
+> res %>% sample_n(6) %>% mutate(x=walk(.$ape_tree, plot))
+
+# restore par()
+> par(opar)
+```
+
+![ape trees](https://raw.githubusercontent.com/vsbuffalo/msr/master/trees-example.png)
+
+

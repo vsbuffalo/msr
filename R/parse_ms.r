@@ -4,6 +4,12 @@ make_flag <- function(flag, vals) {
   dash <- "-"
   if (nchar(flag) > 1)
     dash <- "--"
+  # if a logical value is passed, e.g. T=TRUE, turn that into -T
+  if (is.logical(vals)) {
+    if (vals)
+      return(sprintf("%s%s", dash, flag))
+    # else, flag is off, don't include 
+  }
   vals <- gsub('.', '-', vals, fixed=TRUE)
   sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
 }
@@ -85,7 +91,7 @@ write_tee <- function(x, con, pass=TRUE) {
 #' Parse MS's key/value pairs, e.g. segsites and positions
 #' returning the values as list if there are more than one
 #' @keywords internal
-parse_keyvals  <- function(x) {
+parse_keyvals <- function(x) {
   keyvals <- gsub("(\\w+): +(.*)", "\\1;;\\2", x, perl=TRUE)
   tmp <- strsplit(keyvals, ";;")[[1]]
   key <- tmp[1]
@@ -103,19 +109,33 @@ sites_matrix <- function(x) {
   do.call(rbind, lapply(x, function(y) as.integer(unlist(strsplit(y, "")))))
 }
 
+has_tree <- function(x) {
+  # x are lines for a sim replicate. If there's a tree, second line
+  # begins with (
+  regexpr("^\\(", x[2]) != -1
+}
+
 #' Tidy a single simulation result from MS
 #' @keywords internal
 tidy_sim <- function(x) {
   # first element is the delimiter "//", last element is blank line (except for
   # last sim) 
-  segsites <- parse_keyvals (x[2])
-  positions <- parse_keyvals (x[3])
-  gametes <- x[4:length(x)]
+  i <- 2
+  if (has_tree(x)) {
+    tree <- x[2]
+    i <- i + 1
+  }
+  segsites <- parse_keyvals(x[i])
+  positions <- parse_keyvals(x[i+1])
+  gametes <- x[(i+2):length(x)]
 
   # remove empty line if there
   gametes <- gametes[nchar(gametes) > 0]
   gametes <- sites_matrix(gametes)
-  tibble(segsites, positions=positions, gametes=list(gametes))
+  out <- tibble(segsites, positions=positions, gametes=list(gametes))
+  if (has_tree(x))
+    out$tree <- tree
+  out
 }
 
 #' Parse MS output from R
@@ -126,6 +146,8 @@ tidy_sim <- function(x) {
 #' Each replicate is a row, with a list-column for positions and a matrix of
 #' gamete states.
 #'
+#' A \code{tree} column will be added if ms is run with \code{-T} (or, through 
+#' command line arguments, \code{T=""}.
 #'
 #' You can use the purrr package to write map functions to summarize the
 #' list-column of gametes.
@@ -145,6 +167,9 @@ parse_ms <- function(x) {
   sims <- do.call(rbind, sims_lst)
   # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
-  sims[, c('rep', 'segsites', 'positions', 'gametes')]
+  colorder <- c('rep', 'segsites', 'positions', 'gametes')
+  if ('tree' %in% colnames(sims))
+    colorder <- c(colorder, 'tree')
+  sims[, colorder]
 }
 
