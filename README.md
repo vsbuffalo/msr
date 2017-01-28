@@ -1,4 +1,4 @@
-# Call/Parse Hudson's MS coalescent simulator results from R
+# Call/Parse/Analyze Hudson's MS coalescent simulator results from R
 
 This is a tiny package to call/parse MS results from R. I got sort of sick of
 saving MS output to file and loading it into R each time I wanted a quick
@@ -7,14 +7,14 @@ graphic. The design is in following with Hadley's
 [dplyr](https://github.com/hadley/dplyr)-driven tidy way of manipulating
 dataframes (or in this case, tibbles). 
 
-## Example: Calculating Pi
+## Example: Calculating Theta Pi and Watterson's Theta
 
 Here's a simple example:
 
 ```{R}
 > library(msr)
 > library(tidyverse)
-> res <- call_ms(10, 100, "-t 5") %>% parse_ms() %>% mutate(pi=map_dbl(gametes, theta_pi))
+> res <- call_ms(10, 100, t=5) %>% parse_ms() %>% mutate(pi=map_dbl(gametes, theta_pi))
 > res
 # A tibble: 100 × 5
      rep segsites  positions         gametes    pi
@@ -30,7 +30,24 @@ Here's a simple example:
 9      9       16 <dbl [16]> <int [10 × 16]>  5.92
 10    10       12 <dbl [12]> <int [10 × 12]>  3.32
 # ... with 90 more rows
-> res <-  res %>% mutate(theta_pi=theta_pi, theta_W=theta_W(segsites, 10))
+```
+
+Note that `call_ms()` (and its sibling function `ms()`, which also
+automatically parses the results) take arguments in two ways: (1) as a command
+line string, and (2) as function arguments (as theta was specified above). For
+the latter, multiple-valued arguments are passed as a vector, e.g. to run ms
+with a theta of 30 (`-t 30`), a rho of 10 for 1000 sites (`-r 10 1000`),
+sampling 10 gametes, and replicated 100 times use: `ms(10, 1000, t=30, r=c(10,
+1000))`.  Taking arguments directly through the function like this makes
+calling MS with multiple parameters easier, through the purrr function
+`invoke_rows()` (see further below).
+
+Returning to our example above, we can now analyze these results, using the
+packaged summary statistics functions `theta_pi()` and `theta_W()` on the data
+(though see below for an alternate way with the function `sample_stats()`:
+
+```{R}
+> res <-  res %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, 10))
 > res 
 # A tibble: 100 × 7
      rep segsites  positions         gametes        pi  theta_pi   theta_W
@@ -46,15 +63,16 @@ Here's a simple example:
 9      9       18 <dbl [18]> <int [15 × 18]>  5.617778  5.617778  6.362744
 10    10       19 <dbl [19]> <int [15 × 19]>  7.253333  7.253333  6.716229
 # ... with 90 more rows
+```
+
+Now, we find the mean of these summary statistics:
+
+```{R}
 > res %>% summarize(theta_pi = mean(theta_pi), theta_W = mean(theta_W))
  A tibble: 1 × 2
   theta_pi  theta_W
      <dbl>    <dbl>
 1 4.950222 6.062281
-
-# or 
-res <- call_ms(30, 1000, "-t 20") %>% parse_ms() %>% sample_stats(n=10)
- ggplot(res) + geom_histogram(aes(x=D))
 ```
 
 The list-column approach stores the site matrices for each run in a `gametes`
@@ -76,6 +94,13 @@ combine this with `sample_stats()` below:
 ms(nsam=10, howmany=50, t=30) %>% sample_stats(.n=10) %>% 
     summarize(theta_pi = mean(theta_pi), theta_W = mean(theta_W))
 ```
+
+Or, a quick graphic example:
+
+```{R}
+ggplot(ms(10, 1000, t=30) %>% sample_stats(.n=10)) + geom_histogram(aes(x=D))
+```
+
 
 ## Writing Output to File
 
@@ -114,7 +139,7 @@ Kevin Thornton's neat paper [*Recombination and the Properties of Tajima's D in
 the Context of Approximate-Likelihood
 Calculation*](http://www.genetics.org/content/171/4/2143) using this approach
 (though do note that I am using N=10^4 rather than N=10^5 as in the paper since
-our departments happy hour is soon, and I didn't want to wait for simulations
+our department's happy hour is soon, and I didn't want to wait for simulations
 to complete for this example):
 
 ```{R}
