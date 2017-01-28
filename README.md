@@ -1,5 +1,10 @@
 # Call/Parse/Analyze Hudson's MS coalescent simulator results from R
 
+
+**Warning: this is currently in alpha stage (written very quickly). There are
+bugs and slight biases in the sample_stats() and theta_pi() functions that
+needs to be fixed.**
+
 This is a tiny package to call/parse MS results from R. I got sort of sick of
 saving MS output to file and loading it into R each time I wanted a quick
 graphic. The design is in following with Hadley's
