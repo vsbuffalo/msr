@@ -232,12 +232,14 @@ character-vector Newick-format trees. Below is an example:
 # ... with 90 more rows
 ``` 
 
-These can be plotted using a package like `ape`:
+These can be plotted using a package like `ape`. Note that in the example there
+is no recombination, *so there is one tree per simulation*.
 
 ```{R}
 > library(ape)
 
 # convert all trees using ape's read.tree()
+> res <- ms(30, 100, t=20, T=TRUE)
 > res <- res %>% mutate(ape_tree = read.tree(text=tree))
 
 # store original par()
@@ -245,7 +247,7 @@ These can be plotted using a package like `ape`:
 > par(mfrow=c(2, 3))
 
 # walk the sampled rows' tree objects (from ape), plotting each one
-> res %>% sample_n(6) %>% mutate(x=walk(.$ape_tree, plot))
+> res %>% sample_n(6) %>% mutate(x=walk(ape_tree, plot))
 
 # restore par()
 > par(opar)
@@ -253,4 +255,14 @@ These can be plotted using a package like `ape`:
 
 ![ape trees](https://raw.githubusercontent.com/vsbuffalo/msr/master/trees-example.png)
 
+With recombination, a single recombining locus's genealogy can no longer be
+described by a single tree. Consequently, the `tree` column is a list-column
+full of tibbles, each containing columns of the length of the segment (in bp)
+and the trees for each segment's marginal genealogy. 
+
+```{R}
+> res <- ms(30, 100, t=20, r=c(20, 100), T=TRUE)
+> res <- res %>% sample_n(6) %>% 
+           mutate(ape_tree=map(tree, ~read.tree(text=.$tree)))
+```
 

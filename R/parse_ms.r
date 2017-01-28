@@ -7,7 +7,7 @@ make_flag <- function(flag, vals) {
   # if a logical value is passed, e.g. T=TRUE, turn that into -T
   if (is.logical(vals)) {
     if (vals)
-      return(sprintf("%s%s", dash, flag))
+     return(sprintf("%s%s", dash, flag))
     # else, flag is off, don't include 
   }
   vals <- gsub('.', '-', vals, fixed=TRUE)
@@ -89,7 +89,7 @@ write_tee <- function(x, con, pass=TRUE) {
 }
 
 #' Parse MS's key/value pairs, e.g. segsites and positions
-#' returning the values as list if there are more than one
+#' returning a list of key/vals (where vals can be list too)
 #' @keywords internal
 parse_keyvals <- function(x) {
   keyvals <- gsub("(\\w+): +(.*)", "\\1;;\\2", x, perl=TRUE)
@@ -97,9 +97,9 @@ parse_keyvals <- function(x) {
   key <- tmp[1]
   vals <- as.numeric(strsplit(tmp[2], " ")[[1]])
   if (length(vals) == 1)
-    return(vals)
+    return(setNames(tibble(vals), key))
   else
-    return(list(vals))
+    return(setNames(tibble(list(vals)), key))
 }
 
 
@@ -112,7 +112,16 @@ sites_matrix <- function(x) {
 has_tree <- function(x) {
   # x are lines for a sim replicate. If there's a tree, second line
   # begins with (
-  regexpr("^\\(", x[2]) != -1
+  regexpr("^(\\(|\\[)", x[2]) != -1
+}
+
+has_many_trees <- function(x) regexpr("^\\[", x[2]) != -1
+
+extract_recomb_trees <- function(x) {
+  chunks <- strsplit(sub("\\[(\\d+)\\](.+)", "\\1;;;;\\2", x, perl=TRUE), ";;;;")
+  lens <- as.integer(sapply(chunks, '[', 1))
+  trees <- sapply(chunks, '[', 2)
+  list(tibble(lens=lens, tree=trees))
 }
 
 #' Tidy a single simulation result from MS
@@ -120,19 +129,31 @@ has_tree <- function(x) {
 tidy_sim <- function(x) {
   # first element is the delimiter "//", last element is blank line (except for
   # last sim) 
+  stopifnot(x[1] == "//")
   i <- 2
+  keyval_i <- grep("^[a-z]+", x)
   if (has_tree(x)) {
-    tree <- x[2]
-    i <- i + 1
+    # for sims with recombination, we have multiple trees until segsites
+    if (has_many_trees(x)) {
+      # parse each tree, extracting the segment length (bp) and tree
+      tree <- extract_recomb_trees(x[i:(min(keyval_i)-1)])
+    } else {
+      tree <- x[i]  # just one tree per locus, e.g. no recomb
+    }
   }
-  segsites <- parse_keyvals(x[i])
-  positions <- parse_keyvals(x[i+1])
-  gametes <- x[(i+2):length(x)]
 
-  # remove empty line if there
+  keyval_lines <- x[keyval_i]
+
+  # parse keyval lines, and start creating the master tibble
+  out <- bind_cols(lapply(keyval_lines, parse_keyvals))
+
+  # extract gamete lines, remove empty line if there, convert gametes to matrices
+  gametes <- x[(max(keyval_i)+1):length(x)]
   gametes <- gametes[nchar(gametes) > 0]
   gametes <- sites_matrix(gametes)
-  out <- tibble(segsites, positions=positions, gametes=list(gametes))
+
+  out$gametes <- list(gametes)
+
   if (has_tree(x))
     out$tree <- tree
   out
