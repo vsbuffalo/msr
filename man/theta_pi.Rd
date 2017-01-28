@@ -4,10 +4,12 @@
 \alias{theta_pi}
 \title{Calculate Pi, via the sum of site heterozygosities}
 \usage{
-theta_pi(x)
+theta_pi(x, replace = FALSE)
 }
 \arguments{
 \item{x}{a gamete matrix}
+
+\item{replace}{calculate theta pi based on sampling with replacement formula}
 }
 \description{
 Calculate Pi, via the sum of site heterozygosities

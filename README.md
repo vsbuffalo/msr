@@ -84,7 +84,7 @@ some_fun))` dplyr/purrr pattern (see the example above).
 ## Sample Statistics
 
 Some basic sample statistics functions like those in MS's `sample_stats`
-package are included in the package: `theta_W()`, `theta_pi()`, `tajD()`, and a
+package are included in the package: `theta_W()`, `theta_pi()`, `tajd()`, and a
 function `sample_stats()` that calculates these in a pipeline. 
 
 To make quick runs simple, `ms()` runs both `call_ms()` and `parse_ms()`. We
@@ -161,15 +161,18 @@ to complete for this example):
               unnest(sample_stats)
 
 # group by all changing parameters, and calc summaries of the summary statistics
-> stats %>% group_by(rho) %>% summarize(ED=mean(D), 
-                                       E_D=mean(D_num)/mean(D_denom))
+> stats %>% group_by(rho) %>% 
+     mutate(D_num=tajd_num(theta_pi, segsites, first(nsam)), 
+            D_denom=tajd_denom(segsites, first(nsam))) %>%
+            summarize(ED=mean(D), E_D=mean(D_num)/mean(D_denom))
 # A tibble: 3 × 3
-    rho           ED           E_D
-  <dbl>        <dbl>         <dbl>
-1     0 -0.041641653  0.0007249999
-2    10 -0.015730725 -0.0001006263
-3    50 -0.002313999  0.0014067296
+    rho          ED           E_D
+  <dbl>       <dbl>         <dbl>
+1     0 -0.11336280 -0.0110814556
+2    10 -0.04110813 -0.0025031942
+3    50 -0.01035947 -0.0009970084
 ```
 
-The second column `ED` is reasonably close to Thornton's Table 1, showing the
-same trend downward trend.
+This table is reasonably close to Thornton's Table 1, showing the same trend
+downward trend (though there is a lot of variability across runs due to the
+smallish number of replicates).

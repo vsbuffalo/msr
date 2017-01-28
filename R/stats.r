@@ -22,12 +22,12 @@ theta_pi <- function(x, replace=FALSE) {
 #' @export
 theta_W <- function(s, n) s/(sum(1/(1:(n-1))))
 
-tajD_num <- function(pi, s, n) {
+tajd_num <- function(pi, s, n) {
   a1 <- sum(1/(1:(n-1)))
   pi-s/a1
 } 
 
-tajD_denom <- function(s, n) {
+tajd_denom <- function(s, n) {
   a1 <- sum(1/(1:(n-1)))
   a2 <- sum(1/(1:(n-1))^2)
   b1 <- (n+1)/(3*(n-1))
@@ -36,7 +36,7 @@ tajD_denom <- function(s, n) {
   c2 <- b2 - (n+2)/(a1*n) + a2 / a1^2
   e1 <- c1/a1 
   e2 <- c2/(a1^2 + a2)
-  (sqrt(e1*s) + e2*s*(s-1))
+  sqrt(e1*s + e2*s*(s-1))
 }
 
 
@@ -46,7 +46,7 @@ tajD_denom <- function(s, n) {
 #' @param s numbr of segregating sites
 #' @param n number of samples
 #' @export
-tajD <- function(pi, s, n) {
+tajd <- function(pi, s, n) {
   a1 <- sum(1/(1:(n-1)))
   a2 <- sum(1/(1:(n-1))^2)
   b1 <- (n+1)/(3*(n-1))
@@ -55,7 +55,7 @@ tajD <- function(pi, s, n) {
   c2 <- b2 - (n+2)/(a1*n) + a2 / a1^2
   e1 <- c1/a1 
   e2 <- c2/(a1^2 + a2)
-  D <- (pi-s/a1)/(sqrt(e1*s) + e2*s*(s-1))
+  D <- (pi-s/a1)/sqrt(e1*s + e2*s*(s-1))
   D
 }
 
@@ -67,7 +67,8 @@ tajD <- function(pi, s, n) {
 #'
 #' @export
 sample_stats <- function(x, .n) {
-  x %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, .n), D=tajD(theta_pi, segsites, .n), D_num=tajD_num(theta_pi, segsites, .n), D_denom=tajD_denom(segsites, .n))
+  x %>% mutate(theta_pi=map_dbl(gametes, theta_pi), theta_W=theta_W(segsites, .n), D=tajd(theta_pi, segsites, .n))
+# D_num=tajD_num(theta_pi, segsites, .n), D_denom=tajD_denom(segsites, .n))
 }
 
 
