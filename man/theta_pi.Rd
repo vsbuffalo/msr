@@ -14,4 +14,3 @@ theta_pi(x, replace = FALSE)
 \description{
 Calculate Pi, via the sum of site heterozygosities
 }
-

@@ -10,4 +10,3 @@ tidy_sim(x)
 Tidy a single simulation result from MS
 }
 \keyword{internal}
-

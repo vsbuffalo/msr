@@ -21,4 +21,3 @@ ms(nsam, howmany, cmd = NULL, ..., ms = "ms", verbose = TRUE)
 Call Hudon's MS from R, returning a tibble of results that has been parsed
 by parse_ms(). This is simply a wrapper for call_ms() and parse_ms()
 }
-

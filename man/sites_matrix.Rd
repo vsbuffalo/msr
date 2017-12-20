@@ -10,4 +10,3 @@ sites_matrix(x)
 Convert gaemtes' alleles intro matrix
 }
 \keyword{internal}
-

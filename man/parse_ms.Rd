@@ -13,6 +13,8 @@ Parse MS output from a character vector of lines of output to a tidy tibble.
 Each replicate is a row, with a list-column for positions and a matrix of
 gamete states.
 
+A \code{tree} column will be added if ms is run with \code{-T} (or, through 
+command line arguments, \code{T=""}.
 
 You can use the purrr package to write map functions to summarize the
 list-column of gametes.
@@ -25,4 +27,3 @@ Parse MS output from R
 \examples{
 call_ms(10, 10, "-t 5") \%>\% parse_ms() 
 }
-

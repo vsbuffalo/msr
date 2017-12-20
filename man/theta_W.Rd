@@ -14,4 +14,3 @@ theta_W(s, n)
 \description{
 Calculate Watterson's Theta
 }
-

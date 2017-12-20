@@ -26,4 +26,3 @@ function; arguments passed to \code{...} are converted to command line
 arguments, e.g. \code{r=c(4, 1000)} is converted to \code{-r 4 1000} and 
 \code{mutation.rate=1e-5} converted to \code{--mutation-rate 1e-5}.
 }
-

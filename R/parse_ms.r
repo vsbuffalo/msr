@@ -92,10 +92,10 @@ write_tee <- function(x, con, pass=TRUE) {
 #' returning a list of key/vals (where vals can be list too)
 #' @keywords internal
 parse_keyvals <- function(x) {
-  keyvals <- gsub("(\\w+): +(.*)", "\\1;;\\2", x, perl=TRUE)
+  keyvals <- gsub("(\\w+):\\s+(.*)", "\\1;;\\2", x, perl=TRUE)
   tmp <- strsplit(keyvals, ";;")[[1]]
   key <- tmp[1]
-  vals <- as.numeric(strsplit(tmp[2], " ")[[1]])
+  vals <- as.numeric(strsplit(tmp[2], "\\s+")[[1]])
   if (length(vals) == 1)
     return(setNames(tibble(vals), key))
   else
@@ -189,6 +189,12 @@ parse_ms <- function(x) {
   # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
   colorder <- c('rep', 'segsites', 'positions', 'gametes')
+  if ('time' %in% colnames(sims)) {
+    # unpack this special column
+    sims <- mutate(sims, tmrca=map_dbl(time, first),
+                         ttot=map_dbl(time, nth, n=2)) 
+    colorder <- c(colorder, 'tmrca', 'ttot')
+  }
   if ('tree' %in% colnames(sims))
     colorder <- c(colorder, 'tree')
   sims[, colorder]

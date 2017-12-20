@@ -16,4 +16,3 @@ tajd(pi, s, n)
 \description{
 Calculate Tajima's D
 }
-

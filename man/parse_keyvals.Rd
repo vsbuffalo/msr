@@ -3,13 +3,12 @@
 \name{parse_keyvals}
 \alias{parse_keyvals}
 \title{Parse MS's key/value pairs, e.g. segsites and positions
-returning the values as list if there are more than one}
+returning a list of key/vals (where vals can be list too)}
 \usage{
 parse_keyvals(x)
 }
 \description{
 Parse MS's key/value pairs, e.g. segsites and positions
-returning the values as list if there are more than one
+returning a list of key/vals (where vals can be list too)
 }
 \keyword{internal}
-

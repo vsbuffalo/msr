@@ -14,4 +14,3 @@ sample_stats(x, .n)
 \description{
 Mutate a tibble of results from parse_ms(), adding summary statistics
 }
-

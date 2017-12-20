@@ -24,4 +24,3 @@ res <- call_ms(10, 500, "-t 5") \%>\% write_tee('test.ms') \%>\%
              parse_ms() \%>\% mutate(pi=map_dbl(gametes, pi))
 }
 }
-
