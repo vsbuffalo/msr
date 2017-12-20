@@ -10,7 +10,7 @@ make_flag <- function(flag, vals) {
      return(sprintf("%s%s", dash, flag))
     # else, flag is off, don't include 
   }
-  vals <- gsub('.', '-', vals, fixed=TRUE)
+  #vals <- gsub('.', '-', vals, fixed=TRUE) ## TODOFIX
   sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
 }
 
