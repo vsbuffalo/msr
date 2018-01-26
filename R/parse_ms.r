@@ -192,6 +192,11 @@ parse_ms <- function(x, include_seeds=FALSE) {
     sims$seeds <- paste(seeds, collapse=' ')
   # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
+
+  # it no segregating sites, propogate empty position column
+  if (sims$segsites == 0)
+    sims$positions <- list(numeric())
+
   colorder <- c('rep', 'segsites', 'positions', 'gametes')
   if (include_seeds)
     colorder <- c('rep', 'seeds', 'segsites', 'positions', 'gametes')
