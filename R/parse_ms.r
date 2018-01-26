@@ -1,6 +1,6 @@
 
 make_flag <- function(flag, vals) {
-  # make a unix CL flag by appending one or two dashes. Dots turned into -
+  # make a unix CL flag by appending one or two dashes. underscore turned into -
   dash <- "-"
   if (nchar(flag) > 1)
     dash <- "--"
@@ -10,7 +10,8 @@ make_flag <- function(flag, vals) {
      return(sprintf("%s%s", dash, flag))
     # else, flag is off, don't include 
   }
-  #vals <- gsub('.', '-', vals, fixed=TRUE) ## TODOFIX
+  # if a underscore is present (e.g. for mspms's -random_seed) convert to dash
+  flag <- gsub('_', '-', flag, fixed=TRUE) 
   sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
 }
 
@@ -97,9 +98,9 @@ parse_keyvals <- function(x) {
   key <- tmp[1]
   vals <- as.numeric(strsplit(tmp[2], "\\s+")[[1]])
   if (length(vals) == 1)
-    return(setNames(tibble(vals), key))
+    return(setNames(tibble::tibble(vals), key))
   else
-    return(setNames(tibble(list(vals)), key))
+    return(setNames(tibble::tibble(list(vals)), key))
 }
 
 
@@ -121,7 +122,7 @@ extract_recomb_trees <- function(x) {
   chunks <- strsplit(sub("\\[(\\d+)\\](.+)", "\\1;;;;\\2", x, perl=TRUE), ";;;;")
   lens <- as.integer(sapply(chunks, '[', 1))
   trees <- sapply(chunks, '[', 2)
-  list(tibble(lens=lens, tree=trees))
+  list(tibble::tibble(lens=lens, tree=trees))
 }
 
 #' Tidy a single simulation result from MS
@@ -145,7 +146,7 @@ tidy_sim <- function(x) {
   keyval_lines <- x[keyval_i]
 
   # parse keyval lines, and start creating the master tibble
-  out <- bind_cols(lapply(keyval_lines, parse_keyvals))
+  out <- dplyr::bind_cols(lapply(keyval_lines, parse_keyvals))
 
   # extract gamete lines, remove empty line if there, convert gametes to matrices
   gametes <- x[(max(keyval_i)+1):length(x)]
@@ -162,6 +163,7 @@ tidy_sim <- function(x) {
 #' Parse MS output from R
 #'
 #' @param x character vector output from MS
+#' @param include_seeds logical whether to include seeds
 #'
 #' Parse MS output from a character vector of lines of output to a tidy tibble.
 #' Each replicate is a row, with a list-column for positions and a matrix of
@@ -178,7 +180,7 @@ tidy_sim <- function(x) {
 #'
 #' @examples
 #' call_ms(10, 10, "-t 5") %>% parse_ms() 
-parse_ms <- function(x) {
+parse_ms <- function(x, include_seeds=FALSE) {
   cmd <- x[1]
   seeds <- as.integer(strsplit(x[2], " ")[[1]])
   x <- x[4:length(x)]  # drop first few lines of metadata
@@ -186,9 +188,13 @@ parse_ms <- function(x) {
   res <- split(x, res_grp)
   sims_lst  <- lapply(res, tidy_sim)
   sims <- do.call(rbind, sims_lst)
+  if (include_seeds)
+    sims$seeds <- paste(seeds, collapse=' ')
   # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
   colorder <- c('rep', 'segsites', 'positions', 'gametes')
+  if (include_seeds)
+    colorder <- c('rep', 'seeds', 'segsites', 'positions', 'gametes')
   if ('time' %in% colnames(sims)) {
     # unpack this special column
     sims <- mutate(sims, tmrca=map_dbl(time, first),
@@ -197,6 +203,7 @@ parse_ms <- function(x) {
   }
   if ('tree' %in% colnames(sims))
     colorder <- c(colorder, 'tree')
-  sims[, colorder]
+  out <- sims[, colorder]
+  out
 }
 
