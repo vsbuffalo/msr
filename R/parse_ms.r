@@ -148,12 +148,17 @@ tidy_sim <- function(x) {
   # parse keyval lines, and start creating the master tibble
   out <- dplyr::bind_cols(lapply(keyval_lines, parse_keyvals))
 
-  # extract gamete lines, remove empty line if there, convert gametes to matrices
-  gametes <- x[(max(keyval_i)+1):length(x)]
-  gametes <- gametes[nchar(gametes) > 0]
-  gametes <- sites_matrix(gametes)
-
-  out$gametes <- list(gametes)
+  stopifnot(nrow(out) == 1)
+  if (out$segsites[1] > 0) {
+    # extract gamete lines, remove empty line if there, convert gametes to matrices
+    gametes <- x[(max(keyval_i)+1):length(x)]
+    gametes <- gametes[nchar(gametes) > 0]
+    gametes <- sites_matrix(gametes)
+    out$gametes <- list(gametes)
+  } else {
+    out$positions <- list(numeric())
+    out$gametes <- list(NULL)
+  }
 
   if (has_tree(x))
     out$tree <- tree
@@ -192,10 +197,6 @@ parse_ms <- function(x, include_seeds=FALSE) {
     sims$seeds <- paste(seeds, collapse=' ')
   # sims <- bind_rows(sims_lst)  # bind_rows() fails over 1000 entries
   sims$rep <- seq_along(sims_lst)
-
-  # it no segregating sites, propogate empty position column
-  if (sims$segsites == 0)
-    sims$positions <- list(numeric())
 
   colorder <- c('rep', 'segsites', 'positions', 'gametes')
   if (include_seeds)
