@@ -1,5 +1,5 @@
 
-make_flag <- function(flag, vals) {
+make_flag <- function(flag, vals, strict=FALSE) {
   # make a unix CL flag by appending one or two dashes. underscore turned into -
   dash <- "-"
   if (nchar(flag) > 1 && flag != 'seed')
@@ -15,9 +15,17 @@ make_flag <- function(flag, vals) {
   sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
 }
 
-make_args <- function(...) {
+strict_make_flag <- function(flag, vals) {
+  flag <- gsub('.', '-', flag, fixed=TRUE)
+  sprintf("%s %s", flag, paste(vals, collapse=" "))
+}
+
+make_args <- function(..., strict=FALSE) {
   args <- list(...)
-  paste(Map(make_flag, names(args), args), collapse=" ")
+  if (!strict)
+    return(paste(Map(make_flag, names(args), args), collapse=" "))
+  else
+    return(paste(Map(strict_make_flag, names(args), args), collapse=" "))
 }
 
 #' Call MS from R
@@ -34,15 +42,16 @@ make_args <- function(...) {
 #' @param howmany how many replicates to run
 #' @param cmd the command to pass to MS 
 #' @param ... command line arguments as function arguments (if not using \code{cmd})
+#' @param strict don't try to to guess flags by length of flag name; ".f 3" converted to -f 3, "..flag 3" converted to --flag 3
 #' @param ms the ms-like executable to run, must be in \code{$PATH} or path to executable
 #' 
 #' @export
-call_ms <- function(nsam, howmany, cmd=NULL, ..., ms="ms", verbose=TRUE) {
+call_ms <- function(nsam, howmany, cmd=NULL, ..., ms="ms", strict=FALSE, verbose=TRUE) {
   func_args <- make_args(...)
   if (length(func_args) > 0 && !is.null(cmd))
     stop("specify string command line arguments through 'cmd' or arguments through '...', not both")
   if (length(func_args) > 0)
-    cmd <- make_args(...)
+    cmd <- make_args(..., strict=strict)
   ms_cmd <- sprintf("%s %d %d %s", ms, nsam, howmany, cmd)
   if (verbose)
     message(sprintf("command: %s\n", ms_cmd))

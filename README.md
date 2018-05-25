@@ -266,3 +266,10 @@ and the trees for each segment's marginal genealogy.
            mutate(ape_tree=map(tree, ~read.tree(text=.$tree)))
 ```
 
+## Strict parsing
+
+`msr` makes a guess about how to convert R's function arguments into flags for
+command line programs, based on the length of the flags (e.g. more than one
+character flags are automatically prefaced with `--`). This works with
+well-behaved command line programs like msprime, but fails with ms (e.g. with
+its `-seeds` flag). Use `strict=TRUE` and each `.` is converted to a `-`.
