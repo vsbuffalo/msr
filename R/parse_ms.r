@@ -12,12 +12,12 @@ make_flag <- function(flag, vals, strict=FALSE) {
   }
   # if a underscore is present (e.g. for mspms's -random_seed) convert to dash
   flag <- gsub('_', '-', flag, fixed=TRUE) 
-  sprintf("%s%s %s", dash, flag, paste(vals, collapse=" "))
+  sprintf("%s%s %s", dash, flag, paste(format(vals, scientific=FALSE), collapse=" "))
 }
 
 strict_make_flag <- function(flag, vals) {
   flag <- gsub('.', '-', flag, fixed=TRUE)
-  sprintf("%s %s", flag, paste(vals, collapse=" "))
+  sprintf("%s %s", flag, paste(format(vals, scientific=FALSE), collapse=" "))
 }
 
 make_args <- function(..., strict=FALSE) {
